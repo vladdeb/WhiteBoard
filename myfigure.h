@@ -6,6 +6,16 @@
 #include <QPen>
 #include <QPaintDevice>
 #include <cstdint>
+#include <QJsonObject>
+
+enum Types {
+    tpLine,
+    tpRect,
+    tpEllipse,
+    tpText,
+    tpCurve,
+    tpDrag
+};
 
 class MyFigure
 {
@@ -20,6 +30,10 @@ public:
     virtual void draw(QPainter *painter) {}
     virtual void drag(QPointF p) {}
     virtual void finalize() {}
+    virtual Types type() { return Types::tpDrag; }
+
+    virtual QJsonObject toJson();
+    virtual void fromJson(const QJsonObject &json);
 };
 
 #endif // MYFIGURE_H

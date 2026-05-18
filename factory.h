@@ -5,15 +5,6 @@
 
 #include <QMap>
 
-enum Types {
-    tpLine,
-    tpRect,
-    tpEllipse,
-    tpText,
-    tpCurve,
-    tpDrag
-};
-
 class Factory
 {
 private:

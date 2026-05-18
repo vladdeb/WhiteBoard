@@ -22,6 +22,9 @@ private:
     QColor _color = Qt::white;
     std::uint32_t _width = 2;
     QPoint prevPos;
+    bool redoAvailable = false;
+    bool undoAvailable = false;
+    std::uint32_t currentstate = 0;
 
     void paintEvent(QPaintEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
@@ -48,6 +51,13 @@ public:
     double getXMax() { return _xMax; }
     double getYMin() { return _yMin; }
     double getYMax() { return _yMax; }
+
+    void redo();
+    void undo();
+    bool isRedoAvailable() { return redoAvailable; }
+    bool isUndoAvailable() { return undoAvailable; }
+    void saveToFile(const QString &filePath);
+    void loadFromFile(const QString &filePath);
 };
 
 #endif // CANVAS_H

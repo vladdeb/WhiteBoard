@@ -22,7 +22,13 @@ public:
 private:
     QString iconsPath = "C:\\Users\\Lenovo\\Desktop\\BSUIR\\!sem4\\Course\\WhiteBoard\\icons\\";
     Ui::MainWindow *ui;
+
+private slots:
     void setTool(Types tool);
+    void undo();
+    void redo();
+    void save();
+    void open();
 
 };
 #endif // MAINWINDOW_H

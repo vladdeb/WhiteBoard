@@ -15,6 +15,10 @@ public:
     void draw(QPainter *painter) override;
     void drag(QPointF p) override;
     void finalize() override {}
+
+    Types type() override;
+    QJsonObject toJson() override;
+    void fromJson(const QJsonObject& json) override;
 };
 
 #endif // RECTANGLE_H

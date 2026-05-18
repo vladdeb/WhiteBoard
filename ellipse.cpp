@@ -17,3 +17,23 @@ void Ellipse::draw(QPainter *painter) {
 void Ellipse::drag(QPointF p) {
     end = p;
 }
+
+Types Ellipse::type() {
+    return Types::tpEllipse;
+}
+
+QJsonObject Ellipse::toJson() {
+    QJsonObject json = MyFigure::toJson();
+    json["startX"] = start.x();
+    json["startY"] = start.y();
+    json["endX"] = end.x();
+    json["endY"] = end.y();
+    return json;
+}
+
+void Ellipse::fromJson(const QJsonObject &json) {
+    MyFigure::fromJson(json);
+    start = QPointF(json["startX"].toDouble(), json["startY"].toDouble());
+    end = QPointF(json["endX"].toDouble(), json["endY"].toDouble());
+}
+

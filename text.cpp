@@ -38,3 +38,26 @@ void Text::finalize() {
     text = QInputDialog::getText(_parent, "Set text", "Your text");
     finished = true;
 }
+
+Types Text::type() {
+    return Types::tpText;
+}
+
+QJsonObject Text::toJson() {
+    QJsonObject json = MyFigure::toJson();
+    json["startX"] = start.x();
+    json["startY"] = start.y();
+    json["endX"] = end.x();
+    json["endY"] = end.y();
+    json["text"] = text;
+    return json;
+}
+
+void Text::fromJson(const QJsonObject &json) {
+    MyFigure::fromJson(json);
+    start = QPointF(json["startX"].toDouble(), json["startY"].toDouble());
+    end = QPointF(json["endX"].toDouble(), json["endY"].toDouble());
+    text = json["text"].toString();
+    finished = true;
+}
+

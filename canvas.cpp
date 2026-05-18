@@ -1,6 +1,9 @@
 #include "canvas.h"
 
 #include <QPainter>
+#include <QFile>
+#include <QJsonArray>
+#include <QJsonObject>
 
 void Canvas::setBorders(double xMin, double xMax, double yMin, double yMax) {
     if(xMin >= xMax || yMin >= yMax) {
@@ -19,7 +22,8 @@ void Canvas::paintEvent(QPaintEvent *event) {
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
 
-    for (MyFigure* figure : figures) {
+    for (int i = 0; i < currentstate; ++i) {
+        auto figure = figures[i];
         if (figure) {
             figure->draw(&painter);
         }
@@ -61,6 +65,9 @@ void Canvas::mouseMoveEvent(QMouseEvent *event) {
 void Canvas::mouseReleaseEvent(QMouseEvent *event) {
     if(tool) {
         tool->finalize();
+        figures.resize(currentstate++);
+        redoAvailable = false;
+        undoAvailable = true;
         figures.push_back(tool);
         tool = nullptr;
     }
@@ -106,4 +113,73 @@ void Canvas::wheelEvent(QWheelEvent *event) {
 
 void Canvas::setTool(Types type) {
     toolType = type;
+}
+
+void Canvas::undo() {
+    if(undoAvailable) {
+        currentstate--;
+        if(currentstate == 0) {
+            undoAvailable = false;
+        }
+        redoAvailable = true;
+    }
+    update();
+}
+
+void Canvas::redo() {
+    if(redoAvailable) {
+        currentstate++;
+        if(currentstate == figures.size()) {
+            redoAvailable = false;
+        }
+        undoAvailable = true;
+    }
+    update();
+}
+
+void Canvas::saveToFile(const QString &filePath) {
+    QFile file(filePath);
+    QJsonArray figuresArray;
+    for (MyFigure *fig : figures) {
+        figuresArray.append(fig->toJson());
+    }
+
+    QJsonObject mainObj;
+    mainObj["figures"] = figuresArray;
+
+    QJsonDocument doc(mainObj);
+    if (file.open(QIODevice::WriteOnly)) {
+        file.write(doc.toJson());
+        file.close();
+    }
+}
+
+void Canvas::loadFromFile(const QString &filePath) {
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly)) return;
+
+    QByteArray data = file.readAll();
+    file.close();
+
+    QJsonDocument doc = QJsonDocument::fromJson(data);
+    QJsonArray figuresArray = doc.object()["figures"].toArray();
+
+    for(auto figure: figures) delete figure;
+    figures.clear();
+
+    for (QJsonValue val : figuresArray) {
+        QJsonObject obj = val.toObject();
+        Types figType = static_cast<Types>(obj["type"].toInt());
+
+        MyFigure *fig = factory.create(figType, this, Qt::white, 1);
+        if (fig) {
+            fig->fromJson(obj);
+            figures.append(fig);
+        }
+    }
+    currentstate = figures.size();
+    undoAvailable = (currentstate > 0);
+    redoAvailable = false;
+
+    update();
 }

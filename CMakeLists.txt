@@ -34,6 +34,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         text.h text.cpp
         curve.h curve.cpp
         factory.h factory.cpp
+        savetype.h savetype.cpp savetype.ui
 
     )
 # Define target properties for Android with Qt 6 as:
