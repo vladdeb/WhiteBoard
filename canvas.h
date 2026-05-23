@@ -11,6 +11,7 @@
 
 class Canvas : public QWidget
 {
+    Q_OBJECT
 private:
     QVector<MyFigure*> figures = {};
     double _xMin, _xMax;
@@ -19,8 +20,6 @@ private:
     Factory factory;
     MyFigure *tool = nullptr;
     Types toolType = Types::tpDrag;
-    QColor _color = Qt::white;
-    std::uint32_t _width = 2;
     QPoint prevPos;
     bool redoAvailable = false;
     bool undoAvailable = false;
@@ -34,6 +33,8 @@ private:
     void resizeEvent(QResizeEvent *event) override { scaleX = width() / (_xMax - _xMin); scaleY = height() / (_yMax - _yMin); }
     void setBorders(double xMin, double xMax, double yMin, double yMax);
 public:
+    QColor _color = Qt::white;
+    std::uint32_t _width = 2;
     explicit Canvas(QWidget *parent = nullptr) : QWidget(parent) { factory = Factory(); setBorders(0, width(), 0, height()); }
     ~Canvas() {
         for(auto figure: figures) {
@@ -56,8 +57,15 @@ public:
     void undo();
     bool isRedoAvailable() { return redoAvailable; }
     bool isUndoAvailable() { return undoAvailable; }
-    void saveToFile(const QString &filePath);
-    void loadFromFile(const QString &filePath);
+    QJsonDocument serialize();
+    void deserialize(QJsonDocument);
+    void addFigure(MyFigure*);
+
+signals:
+signals:
+    void sigDraw(MyFigure* figure);
+    void sigRedo();
+    void sigUndo();
 };
 
 #endif // CANVAS_H

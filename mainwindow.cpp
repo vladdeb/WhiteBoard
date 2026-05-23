@@ -5,7 +5,9 @@
 #include <QAction>
 #include <QActionGroup>
 #include <QFileDialog>
+#include <QPushButton>
 #include <QMessageBox>
+#include <QColorDialog>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -13,7 +15,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-
+    //move
     QAction *setDragAction = new QAction(this);
     setDragAction->setIcon(QIcon(iconsPath + "drag.ico"));
     setDragAction->setShortcut(Qt::Key_M);
@@ -21,6 +23,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(setDragAction, &QAction::triggered, this, [this]() {setTool(Types::tpDrag);});
     ui->toolBar->addAction(setDragAction);
 
+    //line
     QAction *setLineAction = new QAction(this);
     setLineAction->setIcon(QIcon(iconsPath + "line.ico"));
     setLineAction->setShortcut(Qt::Key_L);
@@ -28,6 +31,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(setLineAction, &QAction::triggered, this, [this]() {setTool(Types::tpLine);});
     ui->toolBar->addAction(setLineAction);
 
+    //rectangle
     QAction *setRectangleAction = new QAction(this);
     setRectangleAction->setIcon(QIcon(iconsPath + "rect.ico"));
     setRectangleAction->setShortcut(Qt::Key_R);
@@ -35,6 +39,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(setRectangleAction, &QAction::triggered, this, [this]() {setTool(Types::tpRect);});
     ui->toolBar->addAction(setRectangleAction);
 
+    //ELLIPSE
     QAction *setEllipseAction = new QAction(this);
     setEllipseAction->setIcon(QIcon(iconsPath + "ellipse.ico"));
     setEllipseAction->setShortcut(Qt::Key_E);
@@ -42,6 +47,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(setEllipseAction, &QAction::triggered, this, [this]() {setTool(Types::tpEllipse);});
     ui->toolBar->addAction(setEllipseAction);
 
+    //PEN
     QAction *setCurveAction = new QAction(this);
     setCurveAction->setIcon(QIcon(iconsPath + "pen.ico"));
     setCurveAction->setShortcut(Qt::Key_P);
@@ -49,6 +55,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(setCurveAction, &QAction::triggered, this, [this]() {setTool(Types::tpCurve);});
     ui->toolBar->addAction(setCurveAction);
 
+    //TEXT
     QAction *setTextAction = new QAction(this);
     setTextAction->setIcon(QIcon(iconsPath + "T.ico"));
     setTextAction->setShortcut(Qt::Key_T);
@@ -56,6 +63,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(setTextAction, &QAction::triggered, this, [this]() {setTool(Types::tpText);});
     ui->toolBar->addAction(setTextAction);
 
+    //GROUPING
     QActionGroup *toolGroup = new QActionGroup(this);
     setDragAction->setActionGroup(toolGroup);
     setLineAction->setActionGroup(toolGroup);
@@ -71,6 +79,7 @@ MainWindow::MainWindow(QWidget *parent)
     setCurveAction->setCheckable(true);
     setTextAction->setCheckable(true);
 
+    //SAVE
     QAction *saveAction = new QAction(this);
     saveAction->setIcon(QIcon(iconsPath + "save.ico"));
     saveAction->setShortcut(Qt::CTRL | Qt::Key_S);
@@ -78,6 +87,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(saveAction, &QAction::triggered, this, &MainWindow::save);
     ui->toolBar->addAction(saveAction);
 
+    //LOAD
     QAction *loadAction = new QAction(this);
     loadAction->setIcon(QIcon(iconsPath + "open.ico"));
     loadAction->setShortcut(Qt::CTRL | Qt::Key_O);
@@ -85,6 +95,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(loadAction, &QAction::triggered, this, &MainWindow::open);
     ui->toolBar->addAction(loadAction);
 
+    //UNDO/REDO
     QAction *undoAction = new QAction(this);
     undoAction->setIcon(QIcon(iconsPath + "undo.ico"));
     undoAction->setShortcut(Qt::CTRL | Qt::Key_Z);
@@ -98,6 +109,21 @@ MainWindow::MainWindow(QWidget *parent)
     redoAction->setToolTip(tr("Text"));
     connect(redoAction, &QAction::triggered, this, &MainWindow::redo);
     ui->toolBar->addAction(redoAction);
+
+    //CHOOSE COLOR
+
+    connect(btnColor, &QPushButton::clicked, this, &MainWindow::setColor);
+    ui->toolBar->addWidget(btnColor);
+
+    //CHOOsE WHIDTH
+
+    ui->toolBar->addWidget(sldWidth);
+
+    sldWidth->setRange(0, MAX_WIDTH);
+    sldWidth->setValue(3);
+    sldWidth->setMaximumWidth(100);
+    connect(sldWidth, &QSlider::valueChanged, this, &MainWindow::setWidth);
+
 }
 
 void MainWindow::setTool(Types tool) {
@@ -144,4 +170,18 @@ void MainWindow::open() {
     if(!path.isEmpty()) {
         ui->canvas->loadFromFile(path);
     }
+}
+
+void MainWindow::setColor() {
+    QColor newColor = QColorDialog::getColor();
+    QPalette pal = btnColor->palette();
+    pal.setColor(QPalette::Button, newColor);
+    btnColor->setAutoFillBackground(true);
+    btnColor->setPalette(pal);
+    btnColor->update();
+    ui->canvas->setColor(newColor);
+}
+
+void MainWindow::setWidth() {
+    ui->canvas->setWidth(sldWidth->value());
 }

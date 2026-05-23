@@ -65,10 +65,8 @@ void Canvas::mouseMoveEvent(QMouseEvent *event) {
 void Canvas::mouseReleaseEvent(QMouseEvent *event) {
     if(tool) {
         tool->finalize();
-        figures.resize(currentstate++);
-        redoAvailable = false;
-        undoAvailable = true;
-        figures.push_back(tool);
+        addFigure(tool);
+        emit sigDraw(tool);
         tool = nullptr;
     }
     update();
@@ -118,6 +116,7 @@ void Canvas::setTool(Types type) {
 void Canvas::undo() {
     if(undoAvailable) {
         currentstate--;
+        emit sigUndo();
         if(currentstate == 0) {
             undoAvailable = false;
         }
@@ -129,6 +128,7 @@ void Canvas::undo() {
 void Canvas::redo() {
     if(redoAvailable) {
         currentstate++;
+        emit sigRedo();
         if(currentstate == figures.size()) {
             redoAvailable = false;
         }
@@ -137,8 +137,7 @@ void Canvas::redo() {
     update();
 }
 
-void Canvas::saveToFile(const QString &filePath) {
-    QFile file(filePath);
+QJsonDocument Canvas::serialize() {
     QJsonArray figuresArray;
     for (MyFigure *fig : figures) {
         figuresArray.append(fig->toJson());
@@ -148,20 +147,10 @@ void Canvas::saveToFile(const QString &filePath) {
     mainObj["figures"] = figuresArray;
 
     QJsonDocument doc(mainObj);
-    if (file.open(QIODevice::WriteOnly)) {
-        file.write(doc.toJson());
-        file.close();
-    }
+    return doc;
 }
 
-void Canvas::loadFromFile(const QString &filePath) {
-    QFile file(filePath);
-    if (!file.open(QIODevice::ReadOnly)) return;
-
-    QByteArray data = file.readAll();
-    file.close();
-
-    QJsonDocument doc = QJsonDocument::fromJson(data);
+void Canvas::deserialize(QJsonDocument doc) {
     QJsonArray figuresArray = doc.object()["figures"].toArray();
 
     for(auto figure: figures) delete figure;
@@ -182,4 +171,12 @@ void Canvas::loadFromFile(const QString &filePath) {
     redoAvailable = false;
 
     update();
+}
+
+
+void Canvas::addFigure(MyFigure *figure) {
+    figures.resize(currentstate++);
+    redoAvailable = false;
+    undoAvailable = true;
+    figures.push_back(figure);
 }

@@ -1,9 +1,13 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "factory.h"
+#include "myfigure.h"
 
 #include <QMainWindow>
+#include <QPushButton>
+#include <QSlider>
+
+#define MAX_WIDTH 10
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -20,8 +24,10 @@ public:
     ~MainWindow();
 
 private:
-    QString iconsPath = "C:\\Users\\Lenovo\\Desktop\\BSUIR\\!sem4\\Course\\WhiteBoard\\icons\\";
+    QString iconsPath = "C:\\Users\\Lenovo\\Desktop\\BSUIR\\!sem4\\OnlineBoard\\WhiteBoard\\icons\\";
     Ui::MainWindow *ui;
+    QPushButton *btnColor = new QPushButton("", this);
+    QSlider *sldWidth = new QSlider(Qt::Horizontal, this);
 
 private slots:
     void setTool(Types tool);
@@ -29,6 +35,7 @@ private slots:
     void redo();
     void save();
     void open();
-
+    void setColor();
+    void setWidth();
 };
 #endif // MAINWINDOW_H
