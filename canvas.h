@@ -30,12 +30,16 @@ private:
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
     void wheelEvent(QWheelEvent *event) override;
-    void resizeEvent(QResizeEvent *event) override { scaleX = width() / (_xMax - _xMin); scaleY = height() / (_yMax - _yMin); }
+    void resizeEvent(QResizeEvent *event) override;
     void setBorders(double xMin, double xMax, double yMin, double yMax);
 public:
     QColor _color = Qt::white;
     std::uint32_t _width = 2;
-    explicit Canvas(QWidget *parent = nullptr) : QWidget(parent) { factory = Factory(); setBorders(0, width(), 0, height()); }
+    explicit Canvas(QWidget *parent = nullptr) : QWidget(parent) {
+        factory = Factory();
+        scaleX = 1.0;
+        scaleY = 1.0;
+    }
     ~Canvas() {
         for(auto figure: figures) {
             delete figure;
@@ -52,20 +56,24 @@ public:
     double getXMax() { return _xMax; }
     double getYMin() { return _yMin; }
     double getYMax() { return _yMax; }
+    int getCurrentState() { return currentstate; }
+    void setCurrentState(int value) { currentstate = value; update();}
 
-    void redo();
-    void undo();
+    void redo(bool send = 1);
+    void undo(bool send = 1);
     bool isRedoAvailable() { return redoAvailable; }
     bool isUndoAvailable() { return undoAvailable; }
     QJsonDocument serialize();
     void deserialize(QJsonDocument);
-    void addFigure(MyFigure*);
+    void addFigure(MyFigure*, bool send = 1);
+    void clear(bool send = 1);
 
 signals:
 signals:
     void sigDraw(MyFigure* figure);
     void sigRedo();
     void sigUndo();
+    void sigClear();
 };
 
 #endif // CANVAS_H

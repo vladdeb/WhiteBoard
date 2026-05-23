@@ -8,12 +8,22 @@
 #include <QPushButton>
 #include <QMessageBox>
 #include <QColorDialog>
+#include <QSettings>
+#include <QInputDialog>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    QString configPath = QCoreApplication::applicationDirPath() + "/config.ini";
+    if (!QFile::exists(configPath)) {
+        QSettings settings(configPath, QSettings::IniFormat);
+        settings.setValue("Network/server_ip", "127.0.0.1");
+        settings.setValue("Network/server_port", 5173);
+        settings.sync();
+    }
 
     //move
     QAction *setDragAction = new QAction(this);
@@ -124,6 +134,16 @@ MainWindow::MainWindow(QWidget *parent)
     sldWidth->setMaximumWidth(100);
     connect(sldWidth, &QSlider::valueChanged, this, &MainWindow::setWidth);
 
+    //Network
+    QSettings settings(configPath, QSettings::IniFormat);
+    QString ip = settings.value("Network/server_ip", "127.0.0.1").toString();
+    quint16 port = settings.value("Network/server_port", 5173).toUInt();
+    client = new NetworkClient(ui->canvas);
+    client->connectToServer(ip, port);
+    connect(client, &NetworkClient::connectionToBoardFailed, this, &MainWindow::connectFail);
+    connect(client, &NetworkClient::connectionToBoardSuccess, this, &MainWindow::connectSuccess);
+    connect(client, &NetworkClient::hostBoardFailed, this, &MainWindow::hostFail);
+    connect(client, &NetworkClient::hostBoardSuccess, this, &MainWindow::hostSuccess);
 }
 
 void MainWindow::setTool(Types tool) {
@@ -159,7 +179,13 @@ void MainWindow::save() {
                 }
             }
             else {
-                ui->canvas->saveToFile(path);
+                auto doc = ui->canvas->serialize();
+                auto data = doc.toJson();
+                QFile f(path);
+                if(!f.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+                    return;
+                }
+                f.write(data);
             }
         }
     }
@@ -168,7 +194,14 @@ void MainWindow::save() {
 void MainWindow::open() {
     QString path = QFileDialog::getOpenFileName(this, "Load from");
     if(!path.isEmpty()) {
-        ui->canvas->loadFromFile(path);
+        QFile f(path);
+        if(!f.open(QIODevice::ReadOnly)) {
+            return;
+        }
+        QByteArray data;
+        data = f.readAll();
+        auto doc = QJsonDocument::fromJson(data);
+        ui->canvas->deserialize(doc);
     }
 }
 
@@ -184,4 +217,41 @@ void MainWindow::setColor() {
 
 void MainWindow::setWidth() {
     ui->canvas->setWidth(sldWidth->value());
+}
+
+void MainWindow::host() {
+    client->hostBoard();
+}
+
+void MainWindow::connectToBoard() {
+    QString idStr = QInputDialog::getText(this, "Connect", "Enter room key");
+    bool ok;
+    quint32 id = idStr.toInt(&ok);
+    if(!ok) {
+        QMessageBox::warning(this, "Error", "Key must be a number");
+    }
+    client->connectToBoard(id);
+}
+
+void MainWindow::connectFail() {
+    QMessageBox::warning(this, "Error", "Connection to board failed");
+}
+
+
+void MainWindow::connectSuccess() {
+    QMessageBox::information(this, "Error", "Connected to board successfully");
+    ui->ledCode->setText(QString::number(client->getId()));
+}
+
+void MainWindow::hostFail() {
+    QMessageBox::warning(this, "Error", "Hosting to board failed");
+}
+
+void MainWindow::hostSuccess() {
+    QMessageBox::information(this, "Error", "Hosted board successfully");
+    ui->ledCode->setText(QString::number(client->getId()));
+}
+
+void MainWindow::clear() {
+    ui->canvas->clear();
 }

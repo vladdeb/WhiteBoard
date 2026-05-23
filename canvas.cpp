@@ -5,6 +5,14 @@
 #include <QJsonArray>
 #include <QJsonObject>
 
+void Canvas::resizeEvent(QResizeEvent *event) {
+    QWidget::resizeEvent(event);
+    _xMax = width() / scaleX + _xMin;
+    _yMax = height() / scaleY + _yMin;
+
+    update();
+}
+
 void Canvas::setBorders(double xMin, double xMax, double yMin, double yMax) {
     if(xMin >= xMax || yMin >= yMax) {
         throw std::runtime_error("Invalid arguments");
@@ -66,7 +74,6 @@ void Canvas::mouseReleaseEvent(QMouseEvent *event) {
     if(tool) {
         tool->finalize();
         addFigure(tool);
-        emit sigDraw(tool);
         tool = nullptr;
     }
     update();
@@ -113,10 +120,11 @@ void Canvas::setTool(Types type) {
     toolType = type;
 }
 
-void Canvas::undo() {
+void Canvas::undo(bool send) {
     if(undoAvailable) {
         currentstate--;
-        emit sigUndo();
+        if(send)
+            emit sigUndo();
         if(currentstate == 0) {
             undoAvailable = false;
         }
@@ -125,10 +133,11 @@ void Canvas::undo() {
     update();
 }
 
-void Canvas::redo() {
+void Canvas::redo(bool send) {
     if(redoAvailable) {
         currentstate++;
-        emit sigRedo();
+        if(send)
+            emit sigRedo();
         if(currentstate == figures.size()) {
             redoAvailable = false;
         }
@@ -153,8 +162,7 @@ QJsonDocument Canvas::serialize() {
 void Canvas::deserialize(QJsonDocument doc) {
     QJsonArray figuresArray = doc.object()["figures"].toArray();
 
-    for(auto figure: figures) delete figure;
-    figures.clear();
+    clear();
 
     for (QJsonValue val : figuresArray) {
         QJsonObject obj = val.toObject();
@@ -163,7 +171,7 @@ void Canvas::deserialize(QJsonDocument doc) {
         MyFigure *fig = factory.create(figType, this, Qt::white, 1);
         if (fig) {
             fig->fromJson(obj);
-            figures.append(fig);
+            addFigure(fig);
         }
     }
     currentstate = figures.size();
@@ -174,9 +182,23 @@ void Canvas::deserialize(QJsonDocument doc) {
 }
 
 
-void Canvas::addFigure(MyFigure *figure) {
+void Canvas::addFigure(MyFigure *figure, bool send) {
     figures.resize(currentstate++);
     redoAvailable = false;
     undoAvailable = true;
     figures.push_back(figure);
+    if(send)
+        emit sigDraw(figure);
+    update();
+}
+
+void Canvas::clear(bool send) {
+    for(auto figure: figures) delete figure;
+    figures.clear();
+    currentstate = 0;
+    undoAvailable = false;
+    redoAvailable = false;
+    if(send)
+        emit sigClear();
+    update();
 }

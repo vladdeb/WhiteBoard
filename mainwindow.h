@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include "myfigure.h"
+#include "networkclient.h"
 
 #include <QMainWindow>
 #include <QPushButton>
@@ -24,10 +25,11 @@ public:
     ~MainWindow();
 
 private:
-    QString iconsPath = "C:\\Users\\Lenovo\\Desktop\\BSUIR\\!sem4\\OnlineBoard\\WhiteBoard\\icons\\";
+    QString iconsPath = ":/icons/";
     Ui::MainWindow *ui;
     QPushButton *btnColor = new QPushButton("", this);
     QSlider *sldWidth = new QSlider(Qt::Horizontal, this);
+    NetworkClient *client;
 
 private slots:
     void setTool(Types tool);
@@ -37,5 +39,12 @@ private slots:
     void open();
     void setColor();
     void setWidth();
+    void host();
+    void connectToBoard();
+    void hostSuccess();
+    void connectSuccess();
+    void hostFail();
+    void connectFail();
+    void clear();
 };
 #endif // MAINWINDOW_H

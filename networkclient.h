@@ -13,8 +13,10 @@ private:
     QTcpSocket *socket;
     Canvas *_canvas;
     quint32 id;
-    qint32 expected;
+    qint32 expected = -1;
     QByteArray buffer;
+    Factory factory;
+    bool connected = 0;
 
     QByteArray packJson(const QJsonObject &obj);
     void proceedRequest(const QByteArray &data);
@@ -23,12 +25,14 @@ public:
     void connectToServer(QString ip, quint16 port);
     void hostBoard();
     void connectToBoard(quint32 id);
+    quint32 getId() { return id; }
 
 private slots:
     void sendFigure(MyFigure *figure);
     void sendUndo();
     void sendRedo();
     void onReadyRead();
+    void sendClear();
 
 signals:
     void connectionToBoardFailed();

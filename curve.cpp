@@ -12,6 +12,7 @@ void Curve::init(QPointF p) {
 void Curve::draw(QPainter *painter) {
     QPainterPath path;
     painter->setRenderHint(QPainter::Antialiasing);
+    painter->setPen(pen);
     path.moveTo(static_cast<Canvas*>(_parent)->toScreen(points[0]));
     for(auto point: points) {
         path.lineTo(static_cast<Canvas*>(_parent)->toScreen(point));

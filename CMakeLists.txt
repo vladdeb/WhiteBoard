@@ -18,6 +18,7 @@ set(PROJECT_SOURCES
         mainwindow.cpp
         mainwindow.h
         mainwindow.ui
+        resources.qrc
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
@@ -38,8 +39,15 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
         factory.h factory.cpp
         savetype.h savetype.cpp savetype.ui
         networkclient.h networkclient.cpp
-
+        resources.qrc
     )
+
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/config.ini"
+    "${CMAKE_CURRENT_BINARY_DIR}/config.ini"
+    COPYONLY
+)
+
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET WhiteBoard APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
 #                 ${CMAKE_CURRENT_SOURCE_DIR}/android)
