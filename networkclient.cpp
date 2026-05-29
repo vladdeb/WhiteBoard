@@ -14,12 +14,14 @@ NetworkClient::NetworkClient(Canvas *canvas, QObject *parent) : QObject(parent) 
     connect(_canvas, &Canvas::sigUndo, this, &NetworkClient::sendUndo);
     connect(_canvas, &Canvas::sigClear, this, &NetworkClient::sendClear);
     connect(socket, &QTcpSocket::readyRead, this, &NetworkClient::onReadyRead);
-    connect(socket, &QTcpSocket::errorOccurred, this, [](QAbstractSocket::SocketError socketError) {
-        qDebug() << "❌ Socket Error occurred! Code:" << socketError;
-    });
-    connect(socket, &QTcpSocket::stateChanged, this, [](QAbstractSocket::SocketState socketState) {
-        qDebug() << "🔄 Socket State Changed to:" << socketState;
-    });
+    connect(socket, &QTcpSocket::disconnected, this, [this]() { emit disconnected(); });
+    connect(socket, &QTcpSocket::connected, this, [this]() { emit connectedToServer(); });
+    // connect(socket, &QTcpSocket::errorOccurred, this, [](QAbstractSocket::SocketError socketError) {
+    //     qDebug() << "❌ Socket Error occurred! Code:" << socketError;
+    // });
+    // connect(socket, &QTcpSocket::stateChanged, this, [](QAbstractSocket::SocketState socketState) {
+    //     qDebug() << "🔄 Socket State Changed to:" << socketState;
+    // });
 }
 
 void NetworkClient::connectToServer(QString ip, quint16 port) {
@@ -169,4 +171,19 @@ void NetworkClient::onReadyRead() {
         buffer.remove(0, expected);
         expected = -1;
     }
+}
+
+void NetworkClient::disconnectFromBoard() {
+    if(connected) {
+        QJsonObject obj;
+        obj["type"] = "disconnect";
+        obj["id"] = static_cast<int>(id);
+        auto data = packJson(obj);
+        socket->write(data);
+        connected = false;
+    }
+}
+
+void NetworkClient::disconnectFromServer() {
+    socket->disconnectFromHost();
 }

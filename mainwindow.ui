@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>724</width>
-    <height>395</height>
+    <width>933</width>
+    <height>576</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Online whiteboard</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -43,19 +43,19 @@
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <property name="leftMargin">
-        <number>0</number>
+        <number>11</number>
        </property>
        <property name="topMargin">
         <number>0</number>
        </property>
        <property name="rightMargin">
-        <number>0</number>
+        <number>11</number>
        </property>
        <property name="bottomMargin">
         <number>0</number>
        </property>
        <item>
-        <widget class="QPushButton" name="pushButton">
+        <widget class="QPushButton" name="btnClear">
          <property name="text">
           <string>clear</string>
          </property>
@@ -89,16 +89,18 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="btnHost">
-         <property name="text">
-          <string>host</string>
+        <widget class="QRadioButton" name="radioButton">
+         <property name="enabled">
+          <bool>false</bool>
          </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="btnConnect">
          <property name="text">
-          <string>connect</string>
+          <string>Connected to server</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -112,10 +114,54 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>724</width>
+     <width>933</width>
      <height>25</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuRoom">
+    <property name="title">
+     <string>Room</string>
+    </property>
+    <addaction name="actionHost"/>
+    <addaction name="actionConnect"/>
+    <addaction name="actionDisconnect"/>
+   </widget>
+   <widget class="QMenu" name="menuServer">
+    <property name="title">
+     <string>Server</string>
+    </property>
+    <addaction name="actionConnectServ"/>
+    <addaction name="actionDisconnectServ"/>
+   </widget>
+   <widget class="QMenu" name="menuTools">
+    <property name="title">
+     <string>Tools</string>
+    </property>
+    <addaction name="setDragAction"/>
+    <addaction name="setLineAction"/>
+    <addaction name="setRectAction"/>
+    <addaction name="setEllipseAction"/>
+    <addaction name="setPenAction"/>
+    <addaction name="setTextAction"/>
+   </widget>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <widget class="QMenu" name="menuSave">
+     <property name="title">
+      <string>Save</string>
+     </property>
+     <addaction name="actionBmp"/>
+     <addaction name="actionJson"/>
+    </widget>
+    <addaction name="menuSave"/>
+    <addaction name="actionOpen"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuTools"/>
+   <addaction name="menuRoom"/>
+   <addaction name="menuServer"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
@@ -130,6 +176,76 @@
    </attribute>
    <addaction name="separator"/>
   </widget>
+  <action name="actionHost">
+   <property name="text">
+    <string>Host</string>
+   </property>
+  </action>
+  <action name="actionConnect">
+   <property name="text">
+    <string>Connect</string>
+   </property>
+  </action>
+  <action name="actionDisconnect">
+   <property name="text">
+    <string>Disconnect</string>
+   </property>
+  </action>
+  <action name="actionConnectServ">
+   <property name="text">
+    <string>Connect</string>
+   </property>
+  </action>
+  <action name="actionDisconnectServ">
+   <property name="text">
+    <string>Disconnect</string>
+   </property>
+  </action>
+  <action name="setDragAction">
+   <property name="text">
+    <string>Pan</string>
+   </property>
+  </action>
+  <action name="setLineAction">
+   <property name="text">
+    <string>Line</string>
+   </property>
+  </action>
+  <action name="setRectAction">
+   <property name="text">
+    <string>Rectangle</string>
+   </property>
+  </action>
+  <action name="setEllipseAction">
+   <property name="text">
+    <string>Ellipse</string>
+   </property>
+  </action>
+  <action name="setPenAction">
+   <property name="text">
+    <string>Pencil</string>
+   </property>
+  </action>
+  <action name="setTextAction">
+   <property name="text">
+    <string>Text</string>
+   </property>
+  </action>
+  <action name="actionOpen">
+   <property name="text">
+    <string>Open</string>
+   </property>
+  </action>
+  <action name="actionBmp">
+   <property name="text">
+    <string>Image</string>
+   </property>
+  </action>
+  <action name="actionJson">
+   <property name="text">
+    <string>Json</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -142,46 +258,14 @@
  <resources/>
  <connections>
   <connection>
-   <sender>btnHost</sender>
-   <signal>clicked()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>host()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>560</x>
-     <y>360</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>648</x>
-     <y>107</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>btnConnect</sender>
-   <signal>clicked()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>connectToBoard()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>644</x>
-     <y>361</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>677</x>
-     <y>386</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>pushButton</sender>
+   <sender>btnClear</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
    <slot>clear()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>36</x>
-     <y>346</y>
+     <y>549</y>
     </hint>
     <hint type="destinationlabel">
      <x>42</x>

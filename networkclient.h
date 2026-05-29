@@ -25,6 +25,8 @@ public:
     void connectToServer(QString ip, quint16 port);
     void hostBoard();
     void connectToBoard(quint32 id);
+    void disconnectFromBoard();
+    void disconnectFromServer();
     quint32 getId() { return id; }
 
 private slots:
@@ -39,6 +41,8 @@ signals:
     void connectionToBoardSuccess();
     void hostBoardFailed();
     void hostBoardSuccess();
+    void disconnected();
+    void connectedToServer();
 };
 
 #endif // NETWORKCLIENT_H

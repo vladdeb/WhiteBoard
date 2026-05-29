@@ -92,6 +92,13 @@ install(TARGETS WhiteBoard
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
+if(WIN32)
+    # Указываем путь к файлу .ico
+    set(EXE_ICON "icons/mainWindow.ico")
+    # Добавляем этот файл в список исходников вашего приложения
+    target_sources(${PROJECT_NAME} PRIVATE ${EXE_ICON})
+endif()
+
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(WhiteBoard)
 endif()

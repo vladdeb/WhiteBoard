@@ -25,8 +25,9 @@ MainWindow::MainWindow(QWidget *parent)
         settings.sync();
     }
 
+    settings = new QSettings(configPath, QSettings::IniFormat);
     //move
-    QAction *setDragAction = new QAction(this);
+    QAction *setDragAction = ui->setDragAction;
     setDragAction->setIcon(QIcon(iconsPath + "drag.ico"));
     setDragAction->setShortcut(Qt::Key_M);
     setDragAction->setToolTip(tr("Move"));
@@ -34,7 +35,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->toolBar->addAction(setDragAction);
 
     //line
-    QAction *setLineAction = new QAction(this);
+    QAction *setLineAction = ui->setLineAction;
     setLineAction->setIcon(QIcon(iconsPath + "line.ico"));
     setLineAction->setShortcut(Qt::Key_L);
     setLineAction->setToolTip(tr("Line"));
@@ -42,7 +43,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->toolBar->addAction(setLineAction);
 
     //rectangle
-    QAction *setRectangleAction = new QAction(this);
+    QAction *setRectangleAction = ui->setRectAction;
     setRectangleAction->setIcon(QIcon(iconsPath + "rect.ico"));
     setRectangleAction->setShortcut(Qt::Key_R);
     setRectangleAction->setToolTip(tr("Rectangle"));
@@ -50,7 +51,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->toolBar->addAction(setRectangleAction);
 
     //ELLIPSE
-    QAction *setEllipseAction = new QAction(this);
+    QAction *setEllipseAction = ui->setEllipseAction;
     setEllipseAction->setIcon(QIcon(iconsPath + "ellipse.ico"));
     setEllipseAction->setShortcut(Qt::Key_E);
     setEllipseAction->setToolTip(tr("Ellipse"));
@@ -58,7 +59,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->toolBar->addAction(setEllipseAction);
 
     //PEN
-    QAction *setCurveAction = new QAction(this);
+    QAction *setCurveAction = ui->setPenAction;
     setCurveAction->setIcon(QIcon(iconsPath + "pen.ico"));
     setCurveAction->setShortcut(Qt::Key_P);
     setCurveAction->setToolTip(tr("Pen"));
@@ -66,7 +67,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->toolBar->addAction(setCurveAction);
 
     //TEXT
-    QAction *setTextAction = new QAction(this);
+    QAction *setTextAction = ui->setTextAction;
     setTextAction->setIcon(QIcon(iconsPath + "T.ico"));
     setTextAction->setShortcut(Qt::Key_T);
     setTextAction->setToolTip(tr("Text"));
@@ -90,20 +91,20 @@ MainWindow::MainWindow(QWidget *parent)
     setTextAction->setCheckable(true);
 
     //SAVE
-    QAction *saveAction = new QAction(this);
-    saveAction->setIcon(QIcon(iconsPath + "save.ico"));
-    saveAction->setShortcut(Qt::CTRL | Qt::Key_S);
-    saveAction->setToolTip(tr("Text"));
-    connect(saveAction, &QAction::triggered, this, &MainWindow::save);
-    ui->toolBar->addAction(saveAction);
+    QAction *saveActionImg = ui->actionBmp;
+    saveActionImg->setShortcut(Qt::CTRL | Qt::Key_S);
+    saveActionImg->setToolTip(tr("Text"));
+    connect(saveActionImg, &QAction::triggered, this, &MainWindow::saveImg);
 
+    QAction *saveActionJson = ui->actionJson;
+    saveActionJson->setShortcut(Qt::CTRL | Qt::SHIFT | Qt::Key_S);
+    saveActionJson->setToolTip(tr("Text"));
+    connect(saveActionJson, &QAction::triggered, this, &MainWindow::saveJson);
     //LOAD
-    QAction *loadAction = new QAction(this);
-    loadAction->setIcon(QIcon(iconsPath + "open.ico"));
+    QAction *loadAction = ui->actionOpen;
     loadAction->setShortcut(Qt::CTRL | Qt::Key_O);
     loadAction->setToolTip(tr("Text"));
     connect(loadAction, &QAction::triggered, this, &MainWindow::open);
-    ui->toolBar->addAction(loadAction);
 
     //UNDO/REDO
     QAction *undoAction = new QAction(this);
@@ -135,15 +136,81 @@ MainWindow::MainWindow(QWidget *parent)
     connect(sldWidth, &QSlider::valueChanged, this, &MainWindow::setWidth);
 
     //Network
-    QSettings settings(configPath, QSettings::IniFormat);
-    QString ip = settings.value("Network/server_ip", "127.0.0.1").toString();
-    quint16 port = settings.value("Network/server_port", 5173).toUInt();
     client = new NetworkClient(ui->canvas);
-    client->connectToServer(ip, port);
     connect(client, &NetworkClient::connectionToBoardFailed, this, &MainWindow::connectFail);
     connect(client, &NetworkClient::connectionToBoardSuccess, this, &MainWindow::connectSuccess);
     connect(client, &NetworkClient::hostBoardFailed, this, &MainWindow::hostFail);
     connect(client, &NetworkClient::hostBoardSuccess, this, &MainWindow::hostSuccess);
+
+    //Connection actions
+    connect(ui->actionConnect, &QAction::triggered, this, &MainWindow::connectToBoard);
+    connect(ui->actionConnectServ, &QAction::triggered, this, &MainWindow::connectToServer);
+    connect(ui->actionHost, &QAction::triggered, this, &MainWindow::host);
+    connect(ui->actionDisconnect, &QAction::triggered, this, &MainWindow::disconnect);
+    connect(ui->actionDisconnectServ, &QAction::triggered, this, &MainWindow::disconnectServ);
+    connect(client, &NetworkClient::disconnected, this, [this]() {
+        ui->actionDisconnectServ->setEnabled(false);
+        ui->actionConnectServ->setEnabled(true);
+
+        ui->radioButton->setStyleSheet(
+            "QRadioButton::indicator {"
+            "   width: 12px;"
+            "   height: 12px;"
+            "   border-radius: 6px;"
+            "   border: 1px solid gray;"
+            "}"
+            "QRadioButton::indicator:checked {"
+            "   background-color: red;"
+            "}"
+            );
+        ui->radioButton->setText("Not connected to server");
+        ui->ledCode->clear();
+    });
+    connect(client, &NetworkClient::connectedToServer, this, [this]() {
+        ui->actionDisconnectServ->setEnabled(true);
+        ui->actionConnectServ->setEnabled(false);
+
+        ui->radioButton->setStyleSheet(
+            "QRadioButton::indicator {"
+            "   width: 12px;"
+            "   height: 12px;"
+            "   border-radius: 6px;"
+            "   border: 1px solid gray;"
+            "}"
+            "QRadioButton::indicator:checked {"
+            "   background-color: green;"
+            "}"
+            );
+        setConnectios(true, true, false);
+    });
+
+
+    ui->radioButton->setStyleSheet(
+        "QRadioButton::indicator {"
+        "   width: 12px;"
+        "   height: 12px;"
+        "   border-radius: 6px;"
+        "   border: 1px solid gray;"
+        "}"
+        "QRadioButton::indicator:checked {"
+        "   background-color: red;"
+        "}"
+        );
+    ui->radioButton->setText("Not connected to server");
+    ui->radioButton->setChecked(true);
+    setConnectios(false, false, false);
+    setWindowIcon(QIcon(iconsPath + "mainWindow.ico"));
+
+
+    ui->actionDisconnectServ->setEnabled(false);
+    ui->actionConnectServ->setEnabled(true);
+}
+
+
+void MainWindow::setConnectios(bool conn, bool host, bool disconn) {
+    ui->actionConnect->setEnabled(conn);
+    ui->actionHost->setEnabled(host);
+    ui->actionDisconnect->setEnabled(disconn);
 }
 
 void MainWindow::setTool(Types tool) {
@@ -163,31 +230,29 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::save() {
-    saveType diag(this);
-    int result = diag.exec();
-    if(result == QDialog::Accepted) {
-        QString path = QFileDialog::getSaveFileName(this, "Save to");
-        if(!path.isEmpty()) {
-            if(diag.saveFormat == format::bmp) {
-                QPixmap screenshot = ui->canvas->grab();
+void MainWindow::saveImg() {
+    QString path = QFileDialog::getSaveFileName(this, "Save to");
+    if(!path.isEmpty()) {
+        QPixmap screenshot = ui->canvas->grab();
 
-                bool success = screenshot.save(path);
+        bool success = screenshot.save(path);
 
-                if (!success) {
-                    QMessageBox::critical(this, tr("Ошибка"), tr("Не удалось сохранить изображение"));
-                }
-            }
-            else {
-                auto doc = ui->canvas->serialize();
-                auto data = doc.toJson();
-                QFile f(path);
-                if(!f.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-                    return;
-                }
-                f.write(data);
-            }
+        if (!success) {
+            QMessageBox::critical(this, tr("Ошибка"), tr("Не удалось сохранить изображение"));
         }
+    }
+}
+
+void MainWindow::saveJson() {
+    QString path = QFileDialog::getSaveFileName(this, "Save to");
+    if(!path.isEmpty()) {
+            auto doc = ui->canvas->serialize();
+            auto data = doc.toJson();
+            QFile f(path);
+            if(!f.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+                return;
+            }
+            f.write(data);
     }
 }
 
@@ -235,23 +300,60 @@ void MainWindow::connectToBoard() {
 
 void MainWindow::connectFail() {
     QMessageBox::warning(this, "Error", "Connection to board failed");
+    setConnectios(true, true, false);
+    ui->ledCode->clear();
 }
 
 
 void MainWindow::connectSuccess() {
     QMessageBox::information(this, "Error", "Connected to board successfully");
     ui->ledCode->setText(QString::number(client->getId()));
+    setConnectios(false, false, true);
 }
 
 void MainWindow::hostFail() {
     QMessageBox::warning(this, "Error", "Hosting to board failed");
+    setConnectios(true, true, false);
+    ui->ledCode->clear();
 }
 
 void MainWindow::hostSuccess() {
     QMessageBox::information(this, "Error", "Hosted board successfully");
     ui->ledCode->setText(QString::number(client->getId()));
+    setConnectios(false, false, true);
 }
 
 void MainWindow::clear() {
     ui->canvas->clear();
+}
+
+void MainWindow::disconnect() {
+    client->disconnectFromBoard();
+    setConnectios(true, true, false);
+    ui->ledCode->clear();
+}
+
+void MainWindow::disconnectServ() {
+    client->disconnectFromServer();
+    setConnectios(false, false, false);
+    ui->radioButton->setStyleSheet(
+        "QRadioButton::indicator {"
+        "   width: 12px;"
+        "   height: 12px;"
+        "   border-radius: 6px;"
+        "   border: 1px solid gray;"
+        "}"
+        "QRadioButton::indicator:checked {"
+        "   background-color: red;"
+        "}"
+        );
+    ui->radioButton->setText("Not connected to server");
+    ui->ledCode->clear();
+}
+
+void MainWindow::connectToServer() {
+    settings->sync();
+    QString ip = settings->value("Network/server_ip", "127.0.0.1").toString();
+    quint16 port = settings->value("Network/server_port", 5173).toUInt();
+    client->connectToServer(ip, port);
 }

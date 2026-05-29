@@ -7,6 +7,7 @@
 #include <QMainWindow>
 #include <QPushButton>
 #include <QSlider>
+#include <QSettings>
 
 #define MAX_WIDTH 10
 
@@ -30,17 +31,24 @@ private:
     QPushButton *btnColor = new QPushButton("", this);
     QSlider *sldWidth = new QSlider(Qt::Horizontal, this);
     NetworkClient *client;
+    QSettings *settings;
+
+    void setConnectios(bool, bool, bool);
 
 private slots:
     void setTool(Types tool);
     void undo();
     void redo();
-    void save();
+    void saveImg();
+    void saveJson();
     void open();
     void setColor();
     void setWidth();
     void host();
     void connectToBoard();
+    void connectToServer();
+    void disconnect();
+    void disconnectServ();
     void hostSuccess();
     void connectSuccess();
     void hostFail();

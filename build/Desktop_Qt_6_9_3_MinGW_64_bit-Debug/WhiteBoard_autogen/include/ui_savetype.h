@@ -17,7 +17,6 @@
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QRadioButton>
-#include <QtWidgets/QSpacerItem>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
 
@@ -28,7 +27,6 @@ class Ui_saveType
 public:
     QVBoxLayout *verticalLayout;
     QLabel *label;
-    QSpacerItem *verticalSpacer;
     QWidget *widget;
     QHBoxLayout *horizontalLayout;
     QRadioButton *radioButton;
@@ -39,17 +37,18 @@ public:
     {
         if (saveType->objectName().isEmpty())
             saveType->setObjectName("saveType");
-        saveType->resize(400, 300);
+        saveType->resize(385, 132);
+        QSizePolicy sizePolicy(QSizePolicy::Policy::Fixed, QSizePolicy::Policy::Fixed);
+        sizePolicy.setHorizontalStretch(0);
+        sizePolicy.setVerticalStretch(0);
+        sizePolicy.setHeightForWidth(saveType->sizePolicy().hasHeightForWidth());
+        saveType->setSizePolicy(sizePolicy);
         verticalLayout = new QVBoxLayout(saveType);
         verticalLayout->setObjectName("verticalLayout");
         label = new QLabel(saveType);
         label->setObjectName("label");
 
         verticalLayout->addWidget(label);
-
-        verticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
-
-        verticalLayout->addItem(verticalSpacer);
 
         widget = new QWidget(saveType);
         widget->setObjectName("widget");

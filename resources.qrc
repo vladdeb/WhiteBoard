@@ -9,5 +9,6 @@
         <file>icons/save.ico</file>
         <file>icons/T.ico</file>
         <file>icons/undo.ico</file>
+        <file>icons/mainWindow.ico</file>
     </qresource>
 </RCC>

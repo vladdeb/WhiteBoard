@@ -3,6 +3,7 @@
 
 #include <QPainter>
 #include <QInputDialog>
+const int BASE_FONT_SIZE = 10;
 
 void Text::init(QPointF p) {
     start = p;
@@ -14,6 +15,9 @@ void Text::draw(QPainter *painter) {
     double y1 = std::min(start.y(), end.y());
     double x2 = std::max(start.x(), end.x());
     double y2 = std::max(start.y(), end.y());
+    QFont font("comic sans");
+    font.setPointSize(BASE_FONT_SIZE*_width*((Canvas*)_parent)->getScaleX());
+    painter->setFont(font);
     if(!finished) {
         pen.setStyle(Qt::DashLine);
         pen.setWidth(1);
